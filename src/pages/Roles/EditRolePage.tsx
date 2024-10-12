@@ -6,6 +6,7 @@ import Icon from 'react-native-vector-icons/Ionicons';
 import { roleService } from '../../services/role.service';
 import MyInput from '../../components/MyInput';
 import { Role } from '../../models/role.model';
+import Toast from 'react-native-toast-message';
 
 export default function EditRolePage() {
     const navigation = useNavigation<NavigationProp<any>>();
@@ -33,12 +34,22 @@ export default function EditRolePage() {
 
         roleService.update({ id: role.id, name, description })
             .then(saved => {
+                Toast.show({
+                    text1: 'Role atualizada com sucesso!',
+                    type: 'success',
+                    position: 'bottom',
+                });
                 navigation.goBack();
             })
             .catch((error: Error) => {
                 if (error.cause === 400) {
                     Alert.alert('Role já existe!');
                 } else {
+                    Toast.show({
+                        text1: 'Um erro inesperado aconteceu',
+                        type: 'error',
+                        position: 'bottom',
+                    });
                     navigation.navigate('Login');
                 }
             });

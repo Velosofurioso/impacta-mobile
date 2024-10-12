@@ -1,29 +1,39 @@
-import React from 'react';
+import React, { useRef } from 'react';
 import { Alert, TouchableOpacity, View, StyleSheet } from 'react-native';
 import { NavigationProp, useNavigation, useRoute } from '@react-navigation/native';
 import Icon from 'react-native-vector-icons/Ionicons';
+import MultiSelect from 'react-native-multiple-select';
 
 import { userService } from '../../services/user.service';
+import { roleService } from '../../services/role.service';
 import { User } from '../../models/user.model';
+import { Role } from '../../models/role.model';
 import MyInput from '../../components/MyInput';
-
-const items = [
-    { item: 'Option 1', id: 1 },
-    { item: 'Option 2', id: 2 },
-    { item: 'Option 3', id: 3 },
-];
+import Toast from 'react-native-toast-message';
 
 export default function UserPage() {
     const navigation = useNavigation<NavigationProp<any>>();
+    const [allRoles, setAllRoles] = React.useState<Role[]>([]);
     const route = useRoute();
     const user = route.params as User;
 
     const [name, setName] = React.useState(user.name);
     const [username, setUsername] = React.useState(user.username);
-    const [selectedItems, setSelectedItems] = React.useState([]);
+    const [userRoles, setUserRoles] = React.useState(user.roles);
+
+    function fetchRoles() {
+        roleService.getList().then(list => {
+            setAllRoles(list);
+        }).catch(error => {
+            navigation.navigate('Login');
+        });
+    }
+
+    const multiSelectRef = useRef<any>(null);
 
     React.useEffect(() => {
         navigation.setOptions({ title: `Usuário: Id ${user.id}` });
+        fetchRoles();
     }, []);
 
     function validateInputs() {
@@ -39,14 +49,24 @@ export default function UserPage() {
             return;
         }
 
-        userService.update({ id: user.id, name, username })
+        userService.update({ id: user.id, name, username, roles: userRoles })
             .then(saved => {
+                Toast.show({
+                    text1: 'Usuário atualizado com sucesso!',
+                    type: 'success',
+                    position: 'bottom',
+                });
                 navigation.goBack();
             })
             .catch((error: Error) => {
                 if (error.cause === 400) {
                     Alert.alert('Usuário já existe!');
                 } else {
+                    Toast.show({
+                        text1: 'Um erro inesperado aconteceu',
+                        type: 'error',
+                        position: 'bottom',
+                    });
                     navigation.navigate('Login');
                 }
             });
@@ -57,6 +77,22 @@ export default function UserPage() {
             <View style={styles.inputContainer}>
                 <MyInput label='Nome' initialValue={name} change={setName} icon="person"/>
                 <MyInput label='Login' initialValue={username} change={setUsername} icon="mail"/>
+
+                <MultiSelect
+                    items={allRoles.map(role => ({ id: role.id?.toString(), name: role.name }))}
+                    uniqueKey="id"
+                    ref={multiSelectRef}
+                    onSelectedItemsChange={(selected) => {
+                        setUserRoles(selected); 
+                    }}
+                    selectedItems={userRoles}
+                    selectText="Selecione as roles"
+                    searchInputPlaceholderText="Buscar..."
+                    displayKey="name"
+                    submitButtonText="Selecionar"
+                    styleDropdownMenuSubsection={styles.multiSelect}
+                    styleTextDropdownSelected={styles.multiSelectText}
+                />
             </View>
 
             <TouchableOpacity style={styles.fab} onPress={save}>
@@ -82,9 +118,6 @@ const styles = StyleSheet.create({
     },
     multiSelectText: {
         color: '#000',
-    },
-    multiSelectList: {
-        maxHeight: 200,
     },
     fab: {
         position: 'absolute',

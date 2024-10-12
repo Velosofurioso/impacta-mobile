@@ -1,6 +1,6 @@
 import React from 'react';
 import { Alert, FlatList, TouchableOpacity, Text, View, StyleSheet } from "react-native";
-import { NavigationProp, useNavigation } from '@react-navigation/native';
+import { NavigationProp, useNavigation, useFocusEffect } from '@react-navigation/native';
 import Icon from 'react-native-vector-icons/Ionicons';
 
 import { authService } from '../../services/auth.service';
@@ -28,16 +28,18 @@ export default function HomePage() {
         navigation.navigate('Login');
     }
 
-    React.useEffect(() => {
-        navigation.setOptions({
-            headerRight: () => (
-                <TouchableOpacity style={styles.button} onPress={logOut}>
-                    <Icon name="log-out-outline" size={24} color="#000000" />
-                </TouchableOpacity>
-            ),
-        });
-        fetchUsers();
-    }, []);
+    useFocusEffect(
+        React.useCallback(() => {
+            navigation.setOptions({
+                headerRight: () => (
+                    <TouchableOpacity style={styles.button} onPress={logOut}>
+                        <Icon name="log-out-outline" size={24} color="#000000" />
+                    </TouchableOpacity>
+                ),
+            });
+            fetchUsers();
+        }, [navigation])
+    );
 
     function goToNewUser() {
         navigation.navigate('User');

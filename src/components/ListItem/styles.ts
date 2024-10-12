@@ -4,8 +4,7 @@ const styles = StyleSheet.create({
  actionContainer: {
         flexDirection: 'row',
         alignItems: 'center',
-        // Adicionando margem entre os itens
-        marginLeft: 10, // Espaçamento à esquerda do EditItem
+        marginLeft: 10,
     },
     listItem: {
         padding: 15,
@@ -13,8 +12,8 @@ const styles = StyleSheet.create({
         borderRadius: 5,
         marginVertical: 5,
         marginHorizontal: 10,
-        elevation: 2, // Sombra para Android
-        shadowColor: '#000', // Sombra para iOS
+        elevation: 2, 
+        shadowColor: '#000', 
         shadowOffset: { width: 0, height: 1 },
         shadowOpacity: 0.1,
         shadowRadius: 2,
